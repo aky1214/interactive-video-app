@@ -14,7 +14,7 @@
           id="url_input"
           v-model="urlInput"
         />
-        <button type="submit" class="btn btn-outline-primary mt-2">Add<span v-if="message == true">ed</span></button>
+        <button type="submit" class="btn btn-outline-primary mt-2">Add<p v-if="message == true">ed</p></button>
       </form>
       <div class="d-flex flex-column mt-5 w-100">
           <h2 class="f3">Your videos</h2>
@@ -22,8 +22,8 @@
               <button class="btn btn-outline-primary mr-2" :class="{'active':show_completed == false}" @click="show_completed = false">Uploaded Videos</button>
               <button class="btn btn-outline-primary" :class="{'active':show_completed == true}" @click="show_completed = true">Completed Videos</button>
           </div>
-        <UrlList :urlDataList="this.dataObjArray" v-if="!show_completed"/>
-        <CompletedList :urlDataList="this.createdVideos" v-if="show_completed"/>
+        <UrlList :urlDataList="this.dataObjArray" @deleted="deleted" v-if="!show_completed"/>
+        <CompletedList :urlDataList="this.createdVideos" @deleted="deleted" v-if="show_completed"/>
       </div>
     </div>
   </div>
@@ -47,6 +47,9 @@ export default {
   },
   created() {},
   methods: {
+    deleted(){
+      this.$emit('deleted');
+    },
     async onSubmit() {
       const formData = new FormData();
       formData.append("video_url", this.urlInput);

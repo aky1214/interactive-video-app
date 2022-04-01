@@ -1,25 +1,80 @@
 <template>
   <div class="d-flex flex-column">
-    <div class="d-flex align-items-center">
-      <p class="m-0">Type:</p>
-      <button
-        class="btn btn-outline-primary mx-1"
-        @click="event_type = 'button'"
-        :class="{ active: event_type == 'button' }"
-      >
-        Button
-      </button>
-      <button
-        class="btn btn-outline-primary mx-1"
-        @click="event_type = 'form'"
-        :class="{ active: event_type == 'form' }"
-      >
-        Form
-      </button>
+    <div class="d-flex align-items-center justify-content-center">
+      <b-button-group>
+        <button
+          class="btn btn-outline-primary"
+          @click="event_type = 'button'"
+          :class="{ active: event_type == 'button' }"
+        >
+          Button
+        </button>
+        <button
+          class="btn btn-outline-primary"
+          @click="event_type = 'form'"
+          :class="{ active: event_type == 'form' }"
+        >
+          Form
+        </button>
+        <button
+          class="btn btn-outline-primary"
+          @click="event_type = 'cta'"
+          :class="{ active: event_type == 'cta' }"
+        >
+          CTA
+        </button>
+        <b-dropdown id="dropdown-1" text="Position" variant="outline-primary">
+          <b-dropdown-item
+            class="text-capitalize"
+            @click="position = 'top-left'"
+            >top left</b-dropdown-item
+          >
+          <b-dropdown-item
+            class="text-capitalize"
+            @click="position = 'top-center'"
+            >top center</b-dropdown-item
+          >
+          <b-dropdown-item
+            class="text-capitalize"
+            @click="position = 'top-right'"
+            >top right</b-dropdown-item
+          >
+          <b-dropdown-item
+            class="text-capitalize"
+            @click="position = 'middle-left'"
+            >middle left</b-dropdown-item
+          >
+          <b-dropdown-item
+            class="text-capitalize"
+            @click="position = 'middle-center'"
+            >middle center</b-dropdown-item
+          >
+          <b-dropdown-item
+            class="text-capitalize"
+            @click="position = 'middle-right'"
+            >middle right</b-dropdown-item
+          >
+          <b-dropdown-item
+            class="text-capitalize"
+            @click="position = 'bottom-left'"
+            >bottom left</b-dropdown-item
+          >
+          <b-dropdown-item
+            class="text-capitalize"
+            @click="position = 'bottom-center'"
+            >bottom center</b-dropdown-item
+          >
+          <b-dropdown-item
+            class="text-capitalize"
+            @click="position = 'bottom-right'"
+            >bottom right</b-dropdown-item
+          >
+        </b-dropdown>
+      </b-button-group>
     </div>
     <div class="d-flex my-2">
       <div class="w-50 mr-1">
-        <label for="start_time">Start Time: </label>
+        <label for="start_time">Start Time (mm:ss): {{ time_start }}</label>
         <div id="start_time" class="input-group d-flex">
           <input
             class="form-control"
@@ -49,46 +104,27 @@
       </div>
     </div>
     <div class="d-block" v-if="event_type == 'button'">
-      <div class="row my-2" v-for="n in buttonNumber" :key="n">
-        <div class="col">
-          <div class="card p-4">
-            <h4 class="card-title">Button {{ n }}</h4>
-            <div class="d-flex">
-              <div class="w-50 mr-1">
-                <label for="btn_label">Button Label</label>
-                <input
-                  class="form-control"
-                  type="text"
-                  id="btn_label"
-                  :placeholder="`Enter button ${n} text...`"
-                  v-model="buttons[n - 1].text"
-                />
-              </div>
-              <div class="w-50 ml-1">
-                <label for="btn_url">Button Url</label>
-                <input
-                  class="form-control"
-                  type="text"
-                  id="btn_url"
-                  :placeholder="`Enter button ${n} url...`"
-                  v-model="buttons[n - 1].link"
-                />
-              </div>
-            </div>
-          </div>
+      <div v-if="renderInputs == true">
+        <div class="row my-2" v-for="(items, index) in buttons" :key="index">
+          <FormButtons
+            :syncData="items"
+            :btnIndex="index"
+            @updateBtnData="updateBtnData"
+            @deleteButton="deleteButton"
+          />
         </div>
       </div>
       <button
         class="btn btn-outline-success shadow-none"
-        v-if="buttonNumber < 2"
-        @click="buttonNumber += 1"
+        v-if="buttons.length < 4"
+        @click="buttons.push({})"
       >
         Add button
       </button>
       <button
         class="btn btn-outline-danger shadow-none"
-        v-if="buttonNumber >= 2"
-        @click="buttonNumber -= 1"
+        v-if="buttons.length >= 2"
+        @click="buttons.pop()"
       >
         Remove button
       </button>
@@ -96,59 +132,83 @@
     <div class="d-block" v-if="event_type == 'form'">
       <div class="row">
         <div class="col">
-          <label for="input_url">Form Link :</label>
-          <input type="text" placeholder="Enter url for sending form data to..." class="form-control" v-model="input_link">
+          <label for="input_url">Form Title :</label>
+          <input
+            type="text"
+            placeholder="Enter form title"
+            class="form-control"
+            v-model="form_title"
+          />
         </div>
       </div>
-      <div class="row my-2" v-for="n in inputNumber" :key="n">
-        <div class="col">
-          <div class="card p-4">
-            <h4 class="card-title">Input {{ n }}</h4>
-            <div class="input-group">
-              <div class="form-control d-flex align-items-center justify-content-between p-0">
-                <label for="input_type" class="m-0 ml-2">Input type :</label>
-              <select name="input_type" id="input_type" class="form-select border-0 shadow-none m-0 mr-2" v-model="inputs[n-1].type" style="outline:none!important;">
-                <option value="text" >Text</option>
-                <option value="email">Email</option>
-                <option value="textarea">Text Area</option>
-              </select>
-
-              </div>
-              <input
-                class="form-control"
-                type="text"
-                id="btn_label"
-                :placeholder="`Enter Input ${n} name...`"
-                v-model="inputs[n - 1].name"
-              />
-              <input
-                class="form-control"
-                type="text"
-                id="btn_url"
-                :placeholder="`Enter input ${n} placeholder...`"
-                v-model="inputs[n - 1].placeholder"
-              />
-            </div>
-          </div>
+      <div v-if="renderInputs == true">
+        <div class="row my-2" v-for="(items, index) in inputs" :key="index">
+          <FormForms
+            :syncData="items"
+            :formIndex="index"
+            @updateData="updateData"
+            @deleteInput="deleteInput"
+          />
         </div>
       </div>
       <button
         class="btn btn-outline-success shadow-none"
-        v-if="inputNumber < 4"
-        @click="inputNumber += 1"
+        v-if="inputs.length < 5"
+        @click="inputs.push({})"
       >
         Add input
       </button>
       <button
         class="btn btn-outline-danger shadow-none"
-        v-if="inputNumber >= 4"
-        @click="inputNumber -= 1"
+        v-if="inputs.length >= 5"
+        @click="inputs.pop()"
       >
         Remove input
       </button>
     </div>
-    <div class="d-flex justify-content-center border-1 border-top  mt-4">
-      <button class="btn btn-outline-success mt-4 px-5" @click="saveEvent()">Add to event list</button>
+    <div class="d-block" v-if="event_type == 'cta'">
+      <div class="block">
+        <div class="row">
+          <div class="col">
+            <label for="input_url">CTA Text :</label>
+            <input
+              type="text"
+              placeholder="Enter CTA text..."
+              class="form-control"
+              v-model="cta_text"
+            />
+          </div>
+        </div>
+        <div v-if="renderInputs == true">
+          <div class="row my-2" v-for="(items, index) in inputs" :key="index">
+            <FormCta
+              :syncData="items"
+              :ctaIndex="index"
+              @updateData="updateData"
+              @deleteInput="deleteInput"
+            />
+          </div>
+        </div>
+        <button
+          class="btn btn-outline-success shadow-none"
+          v-if="inputs.length < 5"
+          @click="inputs.push({})"
+        >
+          Add input
+        </button>
+        <button
+          class="btn btn-outline-danger shadow-none"
+          v-if="inputs.length >= 5"
+          @click="inputs.pop()"
+        >
+          Remove input
+        </button>
+      </div>
+    </div>
+    <div class="d-flex justify-content-center border-1 border-top mt-4">
+      <button class="btn btn-outline-success mt-4 px-5" @click="saveEvent()">
+        Add to event list
+      </button>
     </div>
   </div>
 </template>
@@ -156,66 +216,176 @@
 <script>
 export default {
   name: "EventAdder",
+  props: {
+    video_length: Number,
+    current_time: Number,
+    editEventObj:Object
+  },
   data() {
     return {
-      typeButton: true,
-      typeForm: false,
       time_start_minute: 0,
       time_start_seconds: 0,
-      time_start:null,
-      buttonNumber: 1,
-      inputNumber: 1,
+      time_start: 0,
       event_type: "button",
-      input_link:'',
+      form_title: "",
       duration: 0,
-      buttons: [{}, {}],
-      inputs: [{}, {}, {}, {}],
+      inputs: [],
+      buttons:[],
+      position: "top-right",
+      cta_text: "",
+      renderInputs: true,
     };
   },
   watch: {
     time_start_minute() {
-      this.time_start =
-        this.time_start_minute * 60 + this.time_start_seconds;
+      this.time_start = parseInt(this.time_start_minute) * 60 + parseInt(this.time_start_seconds);
     },
     time_start_seconds() {
-      this.time_start =
-        this.time_start_minute * 60 + this.time_start_seconds;
+      this.time_start = parseInt(this.time_start_minute) * 60 + parseInt(this.time_start_seconds);
+    },
+    editEventObj(){
+      var editObj = this.editEventObj;
+      if(editObj!=null && editObj!=undefined && Object.keys(editObj).length > 0){
+        console.log('edit',parseInt(editObj.time_start/60),'seconds',editObj.time_start % 60)
+        this.time_start_minute = parseInt(editObj.time_start / 60)
+        this.time_start_seconds = editObj.time_start % 60
+        this.time_start = editObj.time_start
+        this.event_type = editObj.event_type
+        this.form_title = editObj.form_title
+        this.duration = editObj.duration
+        this.inputs = editObj.inputs
+        this.buttons = editObj.buttons
+        this.position = editObj.position
+        this.cta_text = editObj.cta_text
+        this.renderInputs = false;
+        this.$nextTick(() => {
+          this.renderInputs = true;
+        });
+      }
     },
   },
-  methods:{
-    saveEvent(){
-      if(this.event_type == 'button'){
+  async created() {
+    this.inputs[0] = {};
+    this.buttons[0] = {};
+
+  },
+  methods: {
+    updateData(val) {
+      var input = this.inputs;
+      input[val.index] = val.inputObj;
+      this.inputs = input;
+    },
+    deleteInput(val) {
+      var input = this.inputs;
+      if (input[val]) {
+        input.splice(val, 1);
+      }
+      this.inputs = [];
+      this.inputs = input;
+
+      this.renderInputs = false;
+      this.$nextTick(() => {
+        this.renderInputs = true;
+      });
+    },
+    updateBtnData(val) {
+      var button = this.buttons;
+      button[val.index] = val.buttonObj;
+      this.buttons = button;
+    },
+    deleteButton(val) {
+      var button = this.buttons;
+      if (button[val]) {
+        button.splice(val, 1);
+      }
+      this.buttons = [];
+      this.buttons = button;
+
+      this.renderInputs = false;
+      this.$nextTick(() => {
+        this.renderInputs = true;
+      });
+    },
+    saveEvent() {
+      if (this.event_type == "button") {
         let eventObj = {
-          time_start:this.time_start,
-          duration:this.duration,
-          event_type:this.event_type,
-          buttons:[]
-        }
+          position: this.position,
+          time_start: this.time_start,
+          duration: this.duration,
+          event_type: this.event_type,
+          buttons: [],
+        };
         let btnData = this.buttons;
-        for(let i=0;i< btnData.length;i++){
-          if(Object.keys(btnData[i]).length > 1){
-            eventObj.buttons.push(btnData[i])
+        for (let i = 0; i < btnData.length; i++) {
+          if (Object.keys(btnData[i]).length > 1) {
+            eventObj.buttons.push(btnData[i]);
           }
         }
-        this.$emit('eventSave', eventObj);
+        this.$emit("eventSave", eventObj);
+        this.resetInputs()
       }
-      if(this.event_type == 'form'){
+      if (this.event_type == "form") {
         let eventObj = {
-          time_start:this.time_start,
-          duration:this.duration,
-          event_type:this.event_type,
-          input:[],
-          link:this.input_link
-        }
+          position: this.position,
+          time_start: this.time_start,
+          duration: this.duration,
+          event_type: this.event_type,
+          inputs: [],
+          form_title: this.form_title,
+        };
         let inpData = this.inputs;
-        for(let i=0;i< inpData.length;i++){
-          if(Object.keys(inpData[i]).length > 1){
-            eventObj.input.push(inpData[i])
+        var ins = [];
+        for (let i = 0; i < inpData.length; i++) {
+          if (Object.keys(inpData[i]).length > 1) {
+            // alert(inpData[i])
+            ins.push(inpData[i]);
           }
         }
-        this.$emit('eventSave', eventObj);
+        eventObj.inputs = ins;
+        this.$emit("eventSave", eventObj);
+        this.resetInputs()
       }
+      if (this.event_type == "cta") {
+        let eventObj = {
+          position: this.position,
+          time_start: this.time_start,
+          duration: this.duration,
+          event_type: this.event_type,
+          inputs: [],
+          cta_text: this.cta_text,
+        };
+        let inpData = this.inputs;
+        var ins = [];
+        for (let i = 0; i < inpData.length; i++) {
+          if (Object.keys(inpData[i]).length > 1) {
+            // alert(inpData[i])
+            ins.push(inpData[i]);
+          }
+        }
+        eventObj.inputs = ins;
+        this.$emit("eventSave", eventObj);
+        this.resetInputs()
+      }
+    },
+    resetInputs(){
+      this.time_start_minute =  0
+      this.time_start_seconds =  0
+      this.time_start =  0
+      this.event_type =  "button"
+      this.form_title =  ""
+      this.duration =  0
+      this.inputs =  []
+      this.buttons = []
+      this.position =  "top-right"
+      this.cta_text =  ""
+      this.inputs[0] = {}
+      this.buttons[0] = {}
+
+      this.renderInputs = false;
+      this.$nextTick(() => {
+        this.renderInputs = true;
+      });
     }
-  }
+  },
 };
 </script>

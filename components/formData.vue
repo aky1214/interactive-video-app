@@ -37,7 +37,7 @@ export default {
       // if(!allowedTypes.includes(file.type)){
       //   this.message = "Filetype is wrong!!"
       // }
-      if (file.size > 12500000) {
+      if (file.size > 302500000) {
         this.message = "Too large, max size allowed is 100mb";
       }
     },

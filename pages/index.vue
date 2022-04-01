@@ -1,6 +1,6 @@
 <template>
-  <div class="container">
-    <GatherUrl :dataObjArray="dataObjArray" :createdVideos="createdVideos" @refreshList="refreshList"/>
+  <div class="container pt-5">
+    <GatherUrl :dataObjArray="dataObjArray" :createdVideos="createdVideos" @deleted="refreshList" @refreshList="refreshList"/>
   </div>
 </template>
 
@@ -11,6 +11,9 @@ export default {
   components: { GatherUrl },
   name: "IndexPage",
   middleware: "check",
+  props:{
+    userData:String,
+  },
   data() {
     return {
       dataObjArray: [],

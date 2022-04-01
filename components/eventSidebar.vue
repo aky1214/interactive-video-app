@@ -11,7 +11,8 @@
                     <p>Duration: {{parseFloat(items.duration/60).toPrecision(3)}} minutes</p>
                     <p>Event Type: {{items.event_type}} </p>
                 </div>
-                <div class="card-footer">
+                <div class="card-footer d-flex justify-content-between">
+                    <button class="btn btn-outline-warning" @click="editEvent(index)">Edit</button>
                     <button class="btn btn-outline-danger" @click="deleteEvent(index)">Delete</button>
                 </div>
             </div>
@@ -31,6 +32,9 @@ export default {
     methods:{
         deleteEvent(index){
             this.$emit('deleteEvent', index)
+        },
+        editEvent(index){
+            this.$emit('editEvent', index)
         },
         createVideo(){
             this.$emit('createVideo')
