@@ -41,7 +41,7 @@
               name="cpassword"
               v-model="confirmPassword"
             /> -->
-            <button class="btn btn-outline-primary mt-2" :disabled="!email">Sign up</button>
+            <button class="btn btn-outline-primary mt-2" :disabled="!email || !userName">Sign up</button>
           </form>
         </div>
       </div>
@@ -78,14 +78,18 @@ export default {
     //       email:this.email,
     //       password: hashCode(this.password)
     //   }
-      try {
-        await axios.post(`/user-signup`, formData);
-        this.message = "Uploaded!!";
-        window.location =  location.host;
-      } catch (err) {
-        console.log(err);
-        // this.message = err.response.data.error;
-      }
+        await axios.post(`/user-signup`, formData).then((response)=>{
+        alert(response.data)
+        console.log(response.data)
+        this.$router.push(
+                this.$route.query.redirectFrom || {
+                  path: "/login",
+                });
+        })
+      .catch ((err)=>{
+        alert('Duplicate Username')
+        console.log(err)
+      });
     },
   },
 };

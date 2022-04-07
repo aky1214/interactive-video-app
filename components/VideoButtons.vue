@@ -1,7 +1,7 @@
 <template>
     <a class="btn btn-primary m-2" v-if="button.type == 'redirect' && this.button" :href="button.link">{{button.text}}</a>
     <div class="d-flex" v-else-if="button.type == 'social' && this.button">
-        <a class="btn btn-outline-primary m-2 social s-email" :href="`mailto:?subject=Video share&amp;body=Check this video - ${location.host}${button.link}`" v-if="button.social.email == true">
+        <a target="_blank" class="btn btn-outline-primary m-2 social s-email" :href="`mailto:?subject=Video share&amp;body=Check this video - ${loc}${b_link}`" v-if="button.social.email == true">
             <svg            
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
@@ -12,7 +12,7 @@
             />
           </svg>
         </a>
-        <a class="btn btn-outline-primary m-2 social s-facebook" :href="`https://www.facebook.com/sharer/sharer.php?u= ${location.host}${button.link}&quote=Check this video.`" v-if="button.social.facebook == true">
+        <a target="_blank" class="btn btn-outline-primary m-2 social s-facebook" :href="`https://www.facebook.com/share.php?u=${loc}${b_link}`" v-if="button.social.facebook == true">
             <svg
             xmlns="http://www.w3.org/2000/svg"
             data-name="Layer 1"
@@ -24,7 +24,7 @@
             />
           </svg>
         </a>
-        <a class="btn btn-outline-primary m-2 social s-linkedin" :href="`https://www.linkedin.com/shareArticle?url= ${location.host}${button.link} &amp;summary=Check this video - ${location.host}${button.link}&amp;source= ${location.host}${button.link}`" v-if="button.social.linkedin == true">
+        <a target="_blank" class="btn btn-outline-primary m-2 social s-linkedin" :href="`https://www.linkedin.com/shareArticle?url=${loc}${button.link}&amp;summary=Check this video - ${loc}${b_link}&amp;source= ${loc}${b_link}`" v-if="button.social.linkedin == true">
             <svg
             xmlns="http://www.w3.org/2000/svg"
             data-name="Layer 1"
@@ -36,7 +36,7 @@
             />
           </svg>
         </a>
-        <a class="btn btn-outline-primary m-2 social s-twitter" :href="`https://twitter.com/intent/tweet?text=Check this video - ${location.host}${button.link}`" v-if="button.social.twitter == true">
+        <a target="_blank" class="btn btn-outline-primary m-2 social s-twitter" :href="`https://twitter.com/intent/tweet?text=Check this video - ${loc}${b_link}`" v-if="button.social.twitter == true">
             <svg
             xmlns="http://www.w3.org/2000/svg"
             data-name="Layer 1"
@@ -48,7 +48,7 @@
             />
           </svg>
         </a>
-        <a class="btn btn-outline-primary m-2 social s-whatsapp" :href="`https://wa.me/?text=Check this video - ${location.host}${button.link}`" v-if="button.social.whatsapp == true">
+        <a target="_blank" class="btn btn-outline-primary m-2 social s-whatsapp" :href="`https://wa.me/?text=Check this video - ${loc}${b_link}`" v-if="button.social.whatsapp == true">
             <svg
             xmlns:cc="http://creativecommons.org/ns#"
             xmlns:dc="http://purl.org/dc/elements/1.1/"
@@ -80,6 +80,9 @@
     <div class="d-flex" v-else-if="button.type == 'completed' && this.button">
       <button class="btn btn-primary m-2 text-capitalize" @click="loadNew(button.link)">{{button.text}}</button>
     </div>
+    <div class="d-flex" v-else-if="button.type == 'uploaded' && this.button">
+      <button class="btn btn-primary m-2 text-capitalize" @click="loadNewuploaded({link:button.link, name:button.text})">{{button.text}}</button>
+    </div>
 </template>
 
 <script>
@@ -90,12 +93,19 @@ export default {
     },
     data(){
         return{
-          location:location,
+          loc:null,
+          b_link:this.$route.fullPath
         }
+    },
+    async mounted(){
+      this.loc = location.origin
     },
     methods:{
       loadNew(val){
         this.$emit('loadNew', val)
+      },
+      loadNewuploaded(val){
+        this.$emit('loadNewuploaded', val)
       }
     }
 }

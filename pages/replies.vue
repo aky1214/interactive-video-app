@@ -20,15 +20,20 @@
               <b-form-select class="text-capitalize" v-model="replies_for" :options="replies_for_select"></b-form-select>
             </div>
           </div>
-          <div class="card-body" v-if="replyList">
+          <div class="card-body" v-if="replyList != null && replyList.length > 0">
             <div
-              class="d-flex"
+              class="d-flex my-2"
               v-for="(items, index) in replyList"
               :key="index"
             >
-              <ReplyBox @deleted="fetchReplies" :reply="items" v-if="items.read_status == rep_status && rep_status != 'all' && (replies_for == items.video_name || replies_for == 'All')"/>
-              <ReplyBox @deleted="fetchReplies" :reply="items" v-if="rep_status == 'all' && (replies_for == items.video_name || replies_for == 'All')"/>
+              <ReplyBox @deleted="fetchReplies" :reply="items" v-if="items.read_status == rep_status && rep_status != 'all' && replies_for == items.video_name"/>
+              <ReplyBox @deleted="fetchReplies" :reply="items" v-if="rep_status == 'all' && replies_for == items.video_name"/>
+              <ReplyBox @deleted="fetchReplies" :reply="items" v-if="items.read_status == rep_status && rep_status != 'all' && replies_for == 'All'"/>
+              <ReplyBox @deleted="fetchReplies" :reply="items" v-if="rep_status == 'all' && replies_for == 'All'"/>
             </div>
+          </div>
+          <div class="card-body" v-if="replyList == null || replyList.length == 0">
+            <p class="text-center h5">No Contact yet...</p>
           </div>
         </div>
       </div>
@@ -40,40 +45,39 @@
 import axios from "axios";
 export default {
   name: "Replies",
+  middleware:'auth',
   data() {
     return {
       replyList: null,
       rep_status:'all',
       replies_for_select:[],
-      replies_for:'All'
+      replies_for:'All',
+      user:this.$store.state.auth.user
     }
   },
   watch:{
     replyList(){
       var nameList = ['All']
-      this.replyList.forEach((element,index)=>{
+      var list = this.replyList 
+      console.log(list)
+      list.forEach((element,index)=>{
         nameList.push(element.video_name)
       })
-      this.replies_for_select = nameList
+      let unique = nameList.filter((item, i, ar) => ar.indexOf(item) === i);
+      this.replies_for_select = unique
     }
   },
-  async created() {
-    if (process.client) {
-      if (localStorage.getItem("user") == null) {
-        this.$router.push(
-          this.$route.query.redirectFrom || {
-            path: "/login",
-          }
-        );
-      }
+  async created() {  
       this.fetchReplies();
-    }
   },
   methods: {
     async fetchReplies() {
-      let user = JSON.parse(localStorage.getItem("user")).login_user;
+      
+
+      // let user = store.state.auth.user;
+      // console.log(JSON.parse(chek))
       await axios
-        .get(`/${user}/get-replies`)
+        .get(`/${this.user}/get-replies`)
         .then((response) => {
           this.replyList = response.data;
         })

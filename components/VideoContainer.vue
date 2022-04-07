@@ -15,7 +15,7 @@
         v-for="(items, index) in this.events_array"
         :key="index"
       >
-        <div
+        <div class="d-flex flex-wrap"
           :class="items.position"
           id="buttons"
           v-if="
@@ -30,7 +30,7 @@
             v-for="(item, index) in items.buttons"
             :key="index"
           >
-          <VideoButtons :button="item" @loadNew="loadNew"/>
+          <VideoButtons :button="item" @loadNew="loadNew" @loadNewuploaded="loadNewuploaded"/>
             
           </div>
         </div>
@@ -44,7 +44,7 @@
               parseInt(items.time_start) + parseInt(items.duration)
           "
         >
-          <VideoForm v-if="formSubmited == false" :videoName="video_name" :event="items" @submitted="submittedForm"/>
+          <VideoForm v-if="formClose == false" :videoName="video_name" :event="items" @closeForm="submittedForm" @submitted="submittedForm"/>
         </div>
         <div
           :class="items.position"
@@ -57,7 +57,7 @@
           "
         >
           <button class="btn btn-primary" v-if="ctaTextShow == true" @click="ctaTextShow = false">{{items.cta_text}}</button>
-          <VideoCta v-if="ctaTextShow == false" :videoName="video_name" :event="items" @submitted="submittedCta"/>
+          <VideoCta v-if="ctaTextShow == false" :videoName="video_name" :event="items" @closeForm="submittedCta" @submitted="submittedCta"/>
         </div>
       </div>
     </div>
@@ -82,20 +82,36 @@ export default {
       video_length: 0,
       eventOn: true,
       ctaTextShow:true,
-      formSubmited:false,
+      formClose:false,
     };
   },
   created() {
-    // setTimeout(()=>{this.getDetails();},250)
+    setTimeout(()=>{document.getElementById('videoPlayer').play()},250)
   },
   methods: {
     loadNew(val){
         axios.get(`/play-video/${val}`).then((response) => {
-        this.videoUrl = response.data[0].video_url;
-        this.video_name = response.data[0].video_name;
-        this.events_array = JSON.parse(response.data[0].events);
-        console.log(response.data);
-      });
+          this.video_url = response.data[0].video_url;
+          this.video_name = response.data[0].video_name;
+          this.events_array = JSON.parse(response.data[0].events);
+          document.getElementById('videoPlayer').play();
+        });
+    },
+    loadNewuploaded(val){
+      if(this.isValidHttpUrl(val.link)){
+        this.video_url = val.link
+        this.video_name = val.name;
+        this.events_array = [];
+        setTimeout(()=>{document.getElementById('videoPlayer').play()},500)
+        alert('1')}
+      // }else{
+      //   axios.get(`/play-video/${val.link}`).then((response) => {
+      //     this.video_url = response.data[0].video_url;
+      //     this.video_name = response.data[0].video_name;
+      //     // this.events_array = JSON.parse(response.data[0].events);
+      //     document.getElementById('videoPlayer').play();
+      //   });
+      // }
     },
     videoLength() {
       var video = document.querySelector("#videoPlayer");
@@ -112,10 +128,10 @@ export default {
       // console.log(time)
     },
     submittedForm(){
-      this.formSubmited = true
+      this.formClose = true
     },
     submittedCta(){
-      this.ctaTextShow = null
+      this.ctaTextShow = true
     },
     getSeeked() {
       var comp = document.querySelector("#comp");
@@ -125,6 +141,17 @@ export default {
         this.$nextTick(() => {
           this.eventOn = true;
         });
+    },
+    isValidHttpUrl(val) {
+        let url;
+
+        try {
+          url = new URL(val);
+        } catch (_) {
+          return false;
+        }
+
+        return url.protocol === "http:" || url.protocol === "https:";
     },
   },
 };

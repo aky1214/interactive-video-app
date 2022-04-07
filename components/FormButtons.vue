@@ -18,13 +18,16 @@
             text="Button Action"
             variant="outline-success"
           >
-            <b-dropdown-item class="text-capitalize" @click="type = 'redirect'"
+            <b-dropdown-item class="text-capitalize" @click="type = 'redirect', typeFunc()"
               >Redirect to a link</b-dropdown-item
             >
-            <b-dropdown-item class="text-capitalize" @click="type = 'completed'"
-              >Your Videos</b-dropdown-item
+            <b-dropdown-item class="text-capitalize" @click="type = 'completed', typeFunc()"
+              >Your completed videos</b-dropdown-item
             >
-            <b-dropdown-item class="text-capitalize" @click="type = 'social'"
+            <b-dropdown-item class="text-capitalize" @click="type = 'uploaded', typeFunc()"
+              >Your uploaded videos</b-dropdown-item
+            >
+            <b-dropdown-item class="text-capitalize" @click="type = 'social', typeFunc()"
               >Share on Social Media</b-dropdown-item
             >
           </b-dropdown>
@@ -123,13 +126,24 @@
         </p>
       </div>
       <div class="d-block" v-if="type == 'completed'">
+
+        <label for="btn_label">Video button Label</label>
+            <input
+              @keyup="emitData()"
+              class="form-control mb-2"
+              type="text"
+              id="btn_label"
+              :placeholder="`Enter button text...`"
+              v-model="text"
+            />
+        
         <b-dropdown
           class="d-flex"
           id="dropdown-completed"
           text="Select your completed video"
           variant="outline-primary"
         >
-          <b-dropdown-item class="text-capitalize" v-for="(items ,index) in createdVideos" :key="index" @click="compFunc({comp_video_id: items.video_id, text: items.video_name, link: items.video_id})">
+          <b-dropdown-item class="text-capitalize" v-for="(items ,index) in createdVideos" :key="index" @click="compFunc({comp_video_id: items.video_id, link: items.video_id})">
             <div class="d-flex">
               <p class="m-0 mr-lg-5 pr-lg-5">{{items.video_name}}</p>
               <p class="m-0 text-muted fw-light fst-italic ml-lg-5 pl-lg-5">video_id:{{items.video_id}}</p>
@@ -143,6 +157,40 @@
             <p class="text-capitalize"> {{text}}</p>
           </div>
           <p class="text-muted fst-italic">{{comp_video_id}}</p>
+        </div>
+      </div>
+      <div class="d-block" v-if="type == 'uploaded'">
+
+        <label for="btn_label">Video button Label</label>
+            <input
+              @keyup="emitData()"
+              class="form-control mb-2"
+              type="text"
+              id="btn_label"
+              :placeholder="`Enter button text...`"
+              v-model="text"
+            />
+        
+        <b-dropdown
+          class="d-flex"
+          id="dropdown-completed"
+          text="Select your uploaded video"
+          variant="outline-primary"
+        >
+          <b-dropdown-item class="text-capitalize" v-for="(items ,index) in uploadedVideos" :key="index" @click="uploadFunc({up_video_id: items.id, link: items.url})">
+            <div class="d-flex">
+              <p class="m-0 mr-lg-5 pr-lg-5">{{items.name}}</p>
+              <p class="m-0 text-muted fw-light fst-italic ml-lg-5 pl-lg-5">video_id:{{items.id}}</p>
+            </div>
+          </b-dropdown-item>
+        </b-dropdown>
+
+        <div class="d-flex mt-4 justify-content-between">
+          <div class="d-flex">
+            <p class="fw-bold mr-2">Selected video:</p>
+            <p class="text-capitalize"> {{text}}</p>
+          </div>
+          <p class="text-muted fst-italic">{{up_video_id}}</p>
         </div>
       </div>
       <div class="d-block" v-if="type == 'redirect'">
@@ -190,6 +238,7 @@ export default {
       link: "",
       type: null,
       comp_video_id:null,
+      up_video_id:null,
       social: {
         email: false,
         facebook: false,
@@ -198,25 +247,8 @@ export default {
         whatsapp: false,
       },
       createdVideos: [],
+      uploadedVideos: [],
     };
-  },
-  watch: {
-    type() {
-      this.text= ""
-      this.link= ""
-      this.comp_video_id=null
-      this.social= {
-        email: false,
-        facebook: false,
-        linkedin: false,
-        twitter: false,
-        whatsapp: false
-      }
-      this.createdVideos= [];
-      if (this.type == "completed") {
-        this.fetchCompleted();
-      }
-    },
   },
   async created() {
     if (
@@ -230,26 +262,61 @@ export default {
         this.link = this.syncData.link;
       }
       if (this.syncData.type == "completed") {
+        this.type = this.syncData.type;
         this.text = this.syncData.text;
         this.link = this.syncData.link;
         this.comp_video_id = this.syncData.comp_video_id
       }
-      if (this.syncData.type == "social") {
+      if (this.syncData.type == "uploaded") {
+        this.type = this.syncData.type;
+        this.text = this.syncData.text;
         this.link = this.syncData.link;
+        this.up_video_id = this.syncData.up_video_id
+      }
+      if (this.syncData.type == "social") {
         this.type = this.syncData.type;
         this.social = this.syncData.social;
       }
     }
+    this.fetchCompleted();
+    this.fetchUploaded();
   },
   methods: {
+    typeFunc() {
+      this.text= ""
+      this.link= ""
+      this.comp_video_id=null
+      this.up_video_id=null
+      this.social= {
+        email: false,
+        facebook: false,
+        linkedin: false,
+        twitter: false,
+        whatsapp: false
+      }
+      this.createdVideos= [];
+      if (this.type == "completed") {
+        this.fetchCompleted();
+      }
+      if (this.type == "uploaded") {
+        this.fetchUploaded();
+      }
+    },
     async fetchCompleted() {
-      if (process.client) {
-        let user = JSON.parse(localStorage.getItem("user")).login_user;
+        let user = this.$store.state.auth.user;
         await axios.get(`/created-videos/${user}`).then((response) => {
           this.createdVideos = response.data;
           console.log(response.data);
         });
-      }
+    },
+    async fetchUploaded() {
+        let user = this.$store.state.auth.user;
+        await axios
+        .get(`/videos/${user}`)
+        .then((response) => {
+          this.uploadedVideos = response.data;
+          console.log(response.data);
+        });
     },
     socialFunc(val) {
       this.social[`${val}`] = !this.social[`${val}`];
@@ -259,8 +326,14 @@ export default {
     compFunc(val){
       // console.log(val)
       this.link = val.link
-      this.text = val.text
       this.comp_video_id = val.comp_video_id
+      this.emitData()
+      // comp_video_id = items.video_id, text = items.video_name, link = items.video_url
+    },
+    uploadFunc(val){
+      // console.log(val)
+      this.link = val.link
+      this.up_video_id = val.up_video_id
       this.emitData()
       // comp_video_id = items.video_id, text = items.video_name, link = items.video_url
     },
@@ -281,6 +354,21 @@ export default {
             type: this.type,
           };
         }
+        if (this.type == "uploaded") {
+          let linkChk = (val)=>{
+            if(this.isValidHttpUrl(val)){
+                return `${val}`
+            }else{
+                return `${window.location.origin}${val}`
+            }
+          }
+
+          buttonObj = {
+            text: this.text,
+            link: linkChk(this.link),
+            type: this.type,
+          };
+        }
         if (this.type == "social") {
           buttonObj = {
             link: this.link,
@@ -294,6 +382,17 @@ export default {
         };
         this.$emit("updateBtnData", shareObj);
       }
+    },
+    isValidHttpUrl(val) {
+        let url;
+
+        try {
+          url = new URL(val);
+        } catch (_) {
+          return false;
+        }
+
+        return url.protocol === "http:" || url.protocol === "https:";
     },
     deleteButton(val) {
       this.$emit("deleteButton", val);

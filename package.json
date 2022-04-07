@@ -6,8 +6,7 @@
     "dev": "nuxt",
     "build": "nuxt build",
     "start": "nodemon app.js",
-    "generate": "nuxt generate",
-    "app": "nodemon app.js"
+    "generate": "nuxt generate"
   },
   "dependencies": {
     "axios": "^0.26.1",

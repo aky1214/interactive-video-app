@@ -1,22 +1,19 @@
 <template>
-  <!-- <div class="card"> -->
-    <div class="card-body" v-if="!urlDataList || urlDataList.length == 0">
-      <h4 class="text-center my-4">No videos uploaded yet...</h4>
-    </div>
-  <div class="card-body px-0 my-1" v-else>
-    <div class="card my-1" v-for="(items, index) in urlDataList" :key="index">
-      <!-- <nuxt-link :to="{name:'create', params:{obj:items}}"> -->
-      <!-- <div class="card-title px-3 pt-3 m-0">
-                    <h3 class="h5 m-0">{{ items.name }}</h3>
-                </div> -->
+  <div class="card">
+      <div class="card-header">
+        <p class="m-0 text-capitalize" v-if="items.name != 'undefined'">{{items.name}}</p>
+        <p class="m-0 text-capitalize" v-else>video</p>
+        
+      </div>
       <div class="card-body d-flex justify-content-between">
         <p class="text-wrap pr-2" style="word-break:break-all!important;">
           {{ checkValid(`${items.url}`) }}
         </p>
-        <div>
+      </div>
+      <div class="card-footer">
             <b-button
-          variant="btn btn-outline-primary"
-          :to="`/create?id=${items.id}`"
+          variant="btn btn-outline-primary mx-2"
+          :to="`/create?id=${items.id}&edit=false`"
           >Create</b-button
         >
             <b-button
@@ -24,12 +21,8 @@
           @click="deleteVideo({id:items.id,user:items.user,name:items.name})"
           >Delete</b-button
         >
-        </div>
       </div>
-      <!-- </nuxt-link> -->
-    </div>
   </div>
-  <!-- </div> -->
 </template>
 
 <script>
@@ -38,7 +31,7 @@ export default {
   name: "UrlList",
   middleware: "check",
   props: {
-    urlDataList: Array,
+    items: Object,
   },
   data() {
     return {
@@ -47,7 +40,7 @@ export default {
     };
   },
   mounted() {
-    this.webSite = location.host;
+    this.webSite = location.origin;
   },
   methods: {
     // getData(){
@@ -57,7 +50,7 @@ export default {
     // },
     async deleteVideo(val){
       await axios.get(`/delete-uploaded/${val.user}/${val.name}/${val.id}`).then((response)=>{
-        console.log('response :', response)
+        console.log('deleted :', response.data)
         this.$emit('deleted')
       }).catch((error)=>{
         console.log('error :', error)

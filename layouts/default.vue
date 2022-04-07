@@ -24,11 +24,7 @@
 <script>
 export default {
     name:'default',
-    data(){
-        return{
-            user:'user1'
-        }
-    },
+    // middleware:'checkUser',
 }
 </script>
 

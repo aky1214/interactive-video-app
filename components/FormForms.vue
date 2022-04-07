@@ -198,7 +198,7 @@ export default {
       dropArray: [],
     };
   },
-  async created(){
+  async mounted(){
       this.radioArray[0]='';
       this.radioArray[1]='';
       this.checkArray[0]='';

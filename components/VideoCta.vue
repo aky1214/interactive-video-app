@@ -1,5 +1,9 @@
 <template>
   <form class="card p-3" @submit.prevent="formSubmit(event)" method="post">
+    <div class="d-flex justify-content-between mb-2 border-1 border-bottom pb-2">
+      <p class="text-capitalize h5">{{ event.cta_text }}</p>
+      <button class="btn-close"></button>
+    </div>
     <div class="mb-3" v-for="(input, index) in event.inputs" :key="index">
       <div class="text-capitalize"
         v-if="
@@ -55,6 +59,9 @@ export default {
     };
   },
   methods: {
+    closeForm(){
+      this.$emit('closeForm')
+    },
       checkFunc(val){
         var selCheck = document.getElementById(val.id).checked;
             if(!this.formInputs[val.inpIndex]){
@@ -92,7 +99,7 @@ export default {
           }
       });
       console.log(qAns)
-      let user = JSON.parse(localStorage.getItem("user")).login_user;
+      let user = this.$store.state.auth.user;
       const formData = new FormData();
       formData.append("video_id", this.$route.query.id);
       formData.append("video_name", this.videoName);

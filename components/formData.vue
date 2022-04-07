@@ -7,7 +7,8 @@
           <input id="file_input" type="file" ref="file" accept="video/*" @change="onSelect" />
         </div>
         <div class="message">
-          <h5>{{ message }}</h5>
+          <h5 v-if="loading && !message">Uploading...</h5>
+          <h5 v-if="message">{{ message }}</h5>
         </div>
         <div class="fields">
           <button class="btn btn-outline-success">Submit</button>
@@ -26,7 +27,13 @@ export default {
     return {
       file: "",
       message: "",
+      loading:false
     };
+  },
+  watch:{
+    message(){
+      this.loading = false;
+    }
   },
   methods: {
     onSelect() {
@@ -35,16 +42,17 @@ export default {
       this.file = file;
       // alert(file.type)
       // if(!allowedTypes.includes(file.type)){
-      //   this.message = "Filetype is wrong!!"
+        //   this.message = "Filetype is wrong!!"
       // }
       if (file.size > 302500000) {
         this.message = "Too large, max size allowed is 100mb";
       }
     },
     async onSubmit() {
+      this.loading = true;
       const formData = new FormData();
       formData.append("file", this.file);
-      formData.append("user", "user1");
+      formData.append("user", this.$store.state.auth.user);
       try {
         await axios.post(`/add-video`, formData);
         this.message = "Uploaded!!";

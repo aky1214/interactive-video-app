@@ -7,7 +7,8 @@ const bodyParser = require('body-parser');
 const _ = require('lodash');
 const db = require('./db');
 const { json } = require('express/lib/response');
-const fs = require('fs')
+const fs = require('fs');
+const res = require('express/lib/response');
 require('dotenv/config');
 
 const isDev = process.env.APP_ENVIRONMENT != 'production'
@@ -25,10 +26,20 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 // app.use(morgan('dev'));
 
+app.get('/scripts', (req,res)=>{
+  res.sendFile(__dirname + "/data/" + "video-script.js")
+})
+
 app.post('/add-video', (req, res) => {
   if (!req.files) {
     if (req.body.video_url) {
-      db.query(`INSERT INTO video_list(url, name, user) VALUES('${req.body.video_url}','${req.body.name}', '${req.body.user}')`)
+      db.query(`INSERT INTO video_list(url, name, user) VALUES('${req.body.video_url}','${req.body.video_name}', '${req.body.user}')`,(error,response)=>{
+        if(response){
+          res.send('video added')
+        }else if(error){
+          res.send(error)
+        }
+      })
     } else {
       return res.status(500).send({ msg: "file is not found" })
     }
@@ -50,16 +61,19 @@ app.post('/add-video', (req, res) => {
 
 app.post('/user-signup', (req, res) => {
   db.query(`SELECT user_name, email FROM users WHERE user_name = '${req.body.user}'`, (error, response) => {
-    if (response) {
-      res.status(201).send({ login: true });
-    }
-    if (error) {
-      res.send({ login: false });
-      console.log(error);
+    if (response.length>0) {
+      res.status(403).send("User already exists!");
+    }else if (error || response.length == 0) {
+      db.query(`INSERT INTO users(user_name, email) VALUES('${req.body.user}', '${req.body.email}')`,()=>{
+        if (response) {
+          res.status(201).send(`Account for ${req.body.user} Created`);
+        }
+        if (error) {
+          res.status(403).send(error);
+        };
+      })
     };
   })
-  db.query(`INSERT INTO users(user_name, email) VALUES('${req.body.user}', '${req.body.email}')`)
-  res.status(201).send(`Sign Up done for ${req.body.user}`)
 })
 
 app.post('/user-login', (req, res) => {
@@ -87,18 +101,13 @@ app.post('/user-login', (req, res) => {
 app.get('/videos/:user', (req, res) => {
   let user = req.params.user
   db.query(`SELECT * FROM video_list WHERE user = '${user}'`, (error, response) => {
-    // console.log(response[0])
     if (response) {
       let resObj = response
       res.send(resObj)
-      // console.log(resObj)
     } else if (error) {
       res.status(404).send(error)
     }
   })
-  // console.log(req.params.user)
-  // console.log()
-  // res.send(videos)
 })
 
 app.get('/get-video/:videoId', (req, res) => {
@@ -108,19 +117,32 @@ app.get('/get-video/:videoId', (req, res) => {
     if (response) {
       res.send(response)
     } else {
-      res.send(error)
+      res.status(403).send(error)
     }
   })
 });
 
-app.post('/create-video', (req, res) => {
-  db.query(`INSERT INTO video_config(video_name, video_id, video_url, user, events) VALUES('${req.body.video_name}', '${req.body.video_id}', '${req.body.video_url}', '${req.body.user}', '${req.body.events}')`, (error, response) => {
-    if (response) {
-      res.send(response)
-    } else {
-      res.send(error)
-    }
-  })
+app.post('/create-video/:edit', (req, res) => {
+  console.log(req.params.edit)
+  console.log(req.body)
+
+  if(req.params.edit == 'false'){
+    db.query(`INSERT INTO video_config(video_name, video_id, video_url, user, events) VALUES('${req.body.video_name}', '${req.body.video_id}', '${req.body.video_url}', '${req.body.user}', '${req.body.events}')`, (error, response) => {
+      if (response) {
+        res.send(response)
+      } else {
+        res.status(403).send(error)
+      }
+    })
+  }else if(req.params.edit == 'true'){
+    db.query(`UPDATE video_config SET events = '${req.body.events}', video_name = '${req.body.video_name}' WHERE video_id = '${req.body.video_id}'`, (error, response) => {
+      if (response) {
+        res.send(response)
+      } else {
+        res.status(403).send(error)
+      }
+    })
+  }
   // console.log(req.body)
 })
 
@@ -132,7 +154,7 @@ app.get('/play-video/:ids', (req, res) => {
       // console.log(response)
       res.send(response)
     } else {
-      res.send(error)
+      res.status(403).send(error)
     }
   })
 })
@@ -144,18 +166,18 @@ app.get('/created-videos/:user', (req, res) => {
       // console.log(response)
       res.send(response)
     } else {
-      res.send(error)
+      res.status(403).send(error)
     }
   })
 })
 
 app.post('/form-submit', (req,res)=>{
-  db.query(`INSERT INTO user_form_data(user,video_name, video_id, form_data, sender_ip) VALUES('${req.body.user}','${req.body.video_name}','${req.body.video_id}','${req.body.form_data}', '${req.ip}')`, (error,response)=>{
+  db.query(`INSERT INTO user_form_data(user,video_name, video_id, form_data, sender_ip, read_status) VALUES('${req.body.user}','${req.body.video_name}','${req.body.video_id}','${req.body.form_data}', '${req.ip}', '${0}')`, (error,response)=>{
     if (response) {
       console.log(response)
       res.send(response)
     } else {
-      res.send(error)
+      res.status(403).send(error)
     }
   })
 });
@@ -166,7 +188,7 @@ app.get('/:user/get-replies', (req, res)=>{
       console.log(response)
       res.send(response)
     } else {
-      res.send(error)
+      res.status(403).send(error)
     }
   })
 });
@@ -180,7 +202,7 @@ app.get('/delete-message/:id', (req,res)=>{
     if(response){
       res.send(response);
     }else if(error){
-      res.send(error);
+      res.status(403).send(error);
     }
   })
 })
@@ -190,15 +212,20 @@ app.get('/delete-uploaded/:user/:name/:id', (req,res)=>{
   db.query(`DELETE FROM video_list WHERE id = ${req.params.id}`, (error,response)=>{
     if(response){
       try {
-        fs.unlinkSync(path)
+        console.log(req.params.name, typeof req.params.name)
+        if(req.params.name != undefined && req.params.name != "undefined"){
+          console.log('in')
+          fs.unlinkSync(path)
+        }
         //file removed
         res.send(response);
       } catch(err) {
-        // console.error(err)
-        res.send(err);
+        console.error('err',err)
+        res.status(403).send(err);
       }
     }else if(error){
-      res.send(error);
+      console.log('error', error)
+      res.status(403).send(error);
     }
   })
 })
@@ -208,7 +235,7 @@ app.get('/delete-complete/:id', (req,res)=>{
     if(response){
       res.send(response);
     }else if(error){
-      res.send(error);
+      res.status(403).send(error);
     }
   })
 })

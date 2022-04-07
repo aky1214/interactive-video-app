@@ -32,8 +32,9 @@
               name="password"
               v-model="password"
             /> -->
-            <button class="btn btn-outline-primary mt-2">Login</button>
+            <button class="btn btn-outline-primary mt-2 w-100">Login</button>
           </form>
+            <a class="btn btn-outline-primary mt-2" href='/signup'>Sign up</a>
         </div>
       </div>
     </div>
@@ -44,24 +45,13 @@
 import axios from "axios";
 export default {
   name: "login",
+  layout:'LayoutWatch',
   data() {
     return {
       userName: null,
       email: null,
       password: null,
     };
-  },
-  created(){
-      if(process.client){
-    let loginUser= JSON.parse(localStorage.getItem('user'));
-    if(loginUser != null){
-        this.$router.push(
-            this.$route.query.redirectFrom || {
-              path: "/",
-            }
-          );
-    }
-}
   },
   methods: {
     async onSubmit() {
@@ -72,19 +62,14 @@ export default {
           .post(`/user-login`, formData)
           .then((response) => {
             if (response.data.login == true) {
-                localStorage.setItem('user', JSON.stringify({login_user:this.userName}))
-              this.$router.push(
-                this.$route.query.redirectFrom || {
-                  path: "/",
-                }
-              );
+              this.$store.commit('auth/setUser', this.userName)
+              window.localStorage.setItem('user', JSON.stringify({login_user: this.userName}))
+              this.$router.push({name: 'index'})
             }else{
                 alert('User name not found')
             }
             console.log(response.data);
           });
-        console.log(response);
-        window.location = "location.host";
       } catch (err) {
         console.log(err);
         // this.message = err.response.data.error;

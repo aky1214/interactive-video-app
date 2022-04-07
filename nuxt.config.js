@@ -1,7 +1,7 @@
 export default {
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
-    title: 'IV-app',
+    title: 'Editvideo.tk : Create interactive videos',
     htmlAttrs: {
       lang: 'en'
     },
@@ -44,6 +44,10 @@ export default {
     'bootstrap-vue/nuxt',
     'nuxt-clipboard2',
   ],
+
+  // router: {
+  //   middleware: [ 'auth' ]
+  // },
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {

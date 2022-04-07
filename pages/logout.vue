@@ -6,14 +6,15 @@
 export default {
     name:'logout',
     created(){
-        if(process.client){
-            localStorage.removeItem('user')
+        // if(process.client){
+            this.$store.commit('auth/setUser', null)
+            window.localStorage.removeItem('user')
             this.$router.push(
                 this.$route.query.redirectFrom || {
                     path: "/login",
                 }
                 );
-        }
+        // }
     }
 }
 </script>
