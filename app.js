@@ -6,9 +6,11 @@ const bodyParser = require('body-parser');
 // const morgan = require('morgan');
 const _ = require('lodash');
 const db = require('./db');
+const path = require('path');
 const { json } = require('express/lib/response');
 const fs = require('fs');
 const res = require('express/lib/response');
+const RequestIp = require('@supercharge/request-ip')
 require('dotenv/config');
 
 const isDev = process.env.APP_ENVIRONMENT != 'production'
@@ -26,8 +28,41 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 // app.use(morgan('dev'));
 
-app.get('/scripts', (req,res)=>{
-  res.sendFile(__dirname + "/data/" + "video-script.js")
+// var sendScript = require('./data/video-script')
+
+
+app.get('/scripts/lg/:videoId', (req,res)=>{
+  db.query(`SELECT * FROM video_config WHERE video_id = '${req.params.videoId}'`, (error, response) => {
+    if (response) {
+      // eventsArrayFromDatabase = response[0];
+      // console.log(response[0].id)
+      // res.send(response)
+      // res.send(sendScript)
+      let fileData = fs.readFile(path.join(__dirname + "/data/" + "video-script.js"),'utf-8', (err,data)=>{
+        if(err){
+          console.log('err',err)
+          return err
+        }
+        if(data){
+          var d2 = data.replace('db_id', JSON.stringify(response[0].id))
+          .replace('db_video_name', JSON.stringify(response[0].video_name))
+          .replace('db_video_id', JSON.stringify(response[0].video_id))
+          .replace('db_events', response[0].events)
+          .replace('db_video_url', JSON.stringify(response[0].video_url))
+          .replace('db_user', JSON.stringify(response[0].user));
+          console.log('data',d2)
+          res.send(d2)
+          return data
+        }
+      })
+      // res.sendFile(__dirname + "/data/" + "video-script.js")
+    } else {
+      // res.status(403).send(error)
+    }
+  })
+
+  // console.log(fileData)
+  // res.sendFile(__dirname + "/data/" + "video-script.js")
 })
 
 app.post('/add-video', (req, res) => {
@@ -112,9 +147,10 @@ app.get('/videos/:user', (req, res) => {
 
 app.get('/get-video/:videoId', (req, res) => {
 
-  console.log(req.ip)
+  // console.log(req.ip)
   db.query(`SELECT * FROM video_list WHERE id = '${req.params.videoId}'`, (error, response) => {
     if (response) {
+      console.log(response)
       res.send(response)
     } else {
       res.status(403).send(error)
@@ -123,8 +159,8 @@ app.get('/get-video/:videoId', (req, res) => {
 });
 
 app.post('/create-video/:edit', (req, res) => {
-  console.log(req.params.edit)
-  console.log(req.body)
+  // console.log(req.params.edit)
+  // console.log(req.body)
 
   if(req.params.edit == 'false'){
     db.query(`INSERT INTO video_config(video_name, video_id, video_url, user, events) VALUES('${req.body.video_name}', '${req.body.video_id}', '${req.body.video_url}', '${req.body.user}', '${req.body.events}')`, (error, response) => {
@@ -151,7 +187,6 @@ app.get('/play-video/:ids', (req, res) => {
   let vId = `${req.params.ids}`;
   db.query(`SELECT * FROM video_config WHERE video_id = '${vId}'`, (error, response) => {
     if (response) {
-      // console.log(response)
       res.send(response)
     } else {
       res.status(403).send(error)
@@ -172,7 +207,8 @@ app.get('/created-videos/:user', (req, res) => {
 })
 
 app.post('/form-submit', (req,res)=>{
-  db.query(`INSERT INTO user_form_data(user,video_name, video_id, form_data, sender_ip, read_status) VALUES('${req.body.user}','${req.body.video_name}','${req.body.video_id}','${req.body.form_data}', '${req.ip}', '${0}')`, (error,response)=>{
+  const ips = RequestIp.getClientIp(req);
+  db.query(`INSERT INTO user_form_data(user,video_name, video_id, form_data, sender_ip, read_status) VALUES('${req.body.user}','${req.body.video_name}','${req.body.video_id}','${req.body.form_data}', '${ips}', '${0}')`, (error,response)=>{
     if (response) {
       console.log(response)
       res.send(response)

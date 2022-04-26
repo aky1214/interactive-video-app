@@ -14,6 +14,8 @@
               <input type="textarea" placeholder="Edit your iframe link here..." class="form-control w-100 my-2" row="3" v-model="copytext">
               <b-button variant="outline-primary" @click="copySomething(copytext)">Copy Edited</b-button>
               <b-button variant="outline-primary" @click="copySomething(`<iframe width='850px' height='480px' src='${location}/video?id=${video_id}' frameborder='0'></iframe>`)">Iframe (850px x 480px)</b-button>
+              <b-button variant="outline-primary" @click="copySomething(`<div id='video_box'></div>
+    <script id='pgScript' src='${location}/scripts/lg/${video_id}'></script>`)">Script</b-button>
               
               <b-button variant="outline-primary" @click="copytext = ''">Clear</b-button>
               

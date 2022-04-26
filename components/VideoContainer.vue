@@ -85,25 +85,28 @@ export default {
       formClose:false,
     };
   },
-  created() {
-    setTimeout(()=>{document.getElementById('videoPlayer').play()},250)
-  },
   methods: {
-    loadNew(val){
-        axios.get(`/play-video/${val}`).then((response) => {
-          this.video_url = response.data[0].video_url;
+    async loadNew(val){
+      await axios.get(`/play-video/${val}`).then((response) => {
+        this.video_url = response.data[0].video_url;
           this.video_name = response.data[0].video_name;
           this.events_array = JSON.parse(response.data[0].events);
-          document.getElementById('videoPlayer').play();
+          // if(playerDiv.paused == true){
+            // playerDiv.setAttribute("autoplay", true);
+          // }
         });
+        var playerDiv = document.querySelector('#videoPlayer')
+         playerDiv.play();
     },
     loadNewuploaded(val){
+      var playerDiv = document.querySelector('#videoPlayer')
+      playerDiv.autoplay = true;
+       playerDiv.play();
       if(this.isValidHttpUrl(val.link)){
         this.video_url = val.link
         this.video_name = val.name;
         this.events_array = [];
-        setTimeout(()=>{document.getElementById('videoPlayer').play()},500)
-        alert('1')}
+        }
       // }else{
       //   axios.get(`/play-video/${val.link}`).then((response) => {
       //     this.video_url = response.data[0].video_url;
@@ -142,17 +145,17 @@ export default {
           this.eventOn = true;
         });
     },
-    isValidHttpUrl(val) {
-        let url;
+      isValidHttpUrl(val) {
+          let url;
 
-        try {
-          url = new URL(val);
-        } catch (_) {
-          return false;
-        }
+          try {
+            url = new URL(val);
+          } catch (_) {
+            return false;
+          }
 
-        return url.protocol === "http:" || url.protocol === "https:";
-    },
+          return url.protocol === "http:" || url.protocol === "https:";
+      },
   },
 };
 </script>

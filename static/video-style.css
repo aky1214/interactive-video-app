@@ -1,0 +1,75 @@
+.top-left {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+  }
+  .top-center {
+    position: absolute;
+    top: 1rem;
+  }
+  .top-right {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+  }
+  .middle-left {
+    position: absolute;
+    top: 50%;
+    left: 1rem;
+    transform:translate(0%,-50%);
+  }
+  .middle-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+  }
+  .middle-right {
+    position: absolute;
+    top: 50%;
+    right: 1rem;
+  }
+  .bottom-left {
+    position: absolute;
+    bottom: 4.2rem;
+    left: 1rem;
+  }
+  .bottom-center {
+    position: absolute;
+    bottom: 4.2rem;
+    left: 50%;
+    transform: translate(-50%);
+  }
+  .bottom-right {
+    position: absolute;
+    bottom: 4.2rem;
+    right: 1rem;
+  }
+  
+  #cta{
+    max-height: 350px;
+    overflow: scroll;
+  }
+  #forms{
+    max-height: 350px;
+    overflow-y: scroll;
+  }
+  #cta::-webkit-scrollbar{
+    display: none;
+    width: 4px;
+    border-radius: 50%;
+  }
+  #forms::-webkit-scrollbar{
+    display: none;
+    width: 4px;
+    border-radius: 50%;
+  }
+  .social{
+      display: flex;
+  }
+  .social svg{
+      width:20px;
+  }
+  .social:hover svg path{
+      fill:#fff;
+  }

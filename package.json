@@ -9,6 +9,7 @@
     "generate": "nuxt generate"
   },
   "dependencies": {
+    "@supercharge/request-ip": "^1.2.0",
     "axios": "^0.26.1",
     "body-parser": "^1.19.2",
     "bootstrap": "^4.6.1",
